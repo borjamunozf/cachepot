@@ -516,6 +516,7 @@ pub fn try_read_config_file<T: DeserializeOwned>(path: &Path) -> Result<Option<T
         }
     }
 
+    debug!("Que facemos");
     let res = if path.extension().map_or(false, |e| e == "json") {
         serde_json::from_str(&string)
             .with_context(|| format!("Failed to load json config file from {}", path.display()))?
@@ -875,6 +876,7 @@ pub mod worker {
         pub builder: BuilderType,
         pub cache_dir: PathBuf,
         pub public_addr: WorkerUrl,
+        pub internal_addr: WorkerUrl,
         pub scheduler_url: HTTPUrl,
         pub scheduler_auth: SchedulerAuth,
         #[serde(default = "default_toolchain_cache_size")]
@@ -1071,3 +1073,4 @@ public = false
         }
     )
 }
+

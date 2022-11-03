@@ -327,10 +327,12 @@ async fn run(command: Command) -> Result<i32> {
         }
 
         Command::Worker(WorkerSubcommand { config, syslog }) => {
+            info!("QUE FACEMOS");
             let worker::Config {
                 builder,
                 cache_dir,
                 public_addr,
+                internal_addr,
                 scheduler_url,
                 scheduler_auth,
                 toolchain_cache_size,
@@ -383,6 +385,7 @@ async fn run(command: Command) -> Result<i32> {
                 .context("Failed to create cachepot server instance")?;
             let http_server = dist::http::Worker::new(
                 public_addr.0.to_url().clone(),
+                internal_addr.0.to_url().clone(),
                 scheduler_url.to_url().clone(),
                 scheduler_auth,
                 worker,

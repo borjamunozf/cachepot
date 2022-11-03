@@ -1483,6 +1483,7 @@ mod worker {
 
     pub struct Worker<S> {
         public_addr: reqwest::Url,
+        internal_addr: reqwest::Url,
         scheduler_url: reqwest::Url,
         scheduler_auth: String,
         // HTTPS pieces all the builders will use for connection encryption
@@ -1499,6 +1500,7 @@ mod worker {
     impl<S: dist::WorkerIncoming + 'static> Worker<S> {
         pub fn new(
             public_addr: reqwest::Url,
+            internal_addr: reqwest::Url,
             scheduler_url: reqwest::Url,
             scheduler_auth: String,
             handler: S,
@@ -1511,6 +1513,7 @@ mod worker {
 
             Ok(Self {
                 public_addr,
+                internal_addr,
                 scheduler_url,
                 scheduler_auth,
                 cert_digest,
@@ -1525,6 +1528,7 @@ mod worker {
         pub async fn start(self) -> Result<Void> {
             let Self {
                 public_addr,
+                internal_addr,
                 scheduler_url,
                 scheduler_auth,
                 cert_digest,
@@ -1582,13 +1586,15 @@ mod worker {
                 }
             });
 
-            futures::future::join_all(public_addr.socket_addrs(|| None)?.iter().map(|addr| {
+            futures::future::join_all(internal_addr.socket_addrs(|| None)?.iter().map(|addr| {
                 let api = api.clone();
+                trace!("Warp worker server listening on internal address: {}", *addr);
                 warp::serve(api)
                     .tls()
                     .cert(cert_pem.clone())
                     .key(privkey_pem.clone())
                     .run(*addr)
+
             }))
             .await;
 
